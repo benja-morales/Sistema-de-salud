@@ -1,5 +1,11 @@
 # Sistema-de-salud
 
+## Integrantes
+
+= Marco Calfucura
+= Gabriel Díaz
+= Benajamín Morales
+
 # Sistema de Gestión Clínica - Arquitectura de Microservicios
 
 ## Descripción General
