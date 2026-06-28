@@ -1,0 +1,331 @@
+services:
+
+  mysql-db:
+    image: mysql:8.0
+    container_name: consultorio-mysql
+    restart: always
+
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+
+    ports:
+      - "3307:3306"
+
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./docs/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+
+    networks:
+      - consultorio-net
+
+  eureka-server:
+    image: eclipse-temurin:21-jre
+    container_name: eureka-server
+
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+
+    ports:
+      - "8761:8761"
+
+    volumes:
+      - ./apps/eureka-server.jar:/app/app.jar
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  msAutentificacion:
+    image: eclipse-temurin:21-jre
+    container_name: msAutentificacion
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    ports:
+      - "8083:8083"
+
+    volumes:
+      - ./apps/msAutentificacion.jar:/app/app.jar
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/db_consultorio
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  ms-paciente:
+    image: eclipse-temurin:21-jre
+    container_name: ms-paciente
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    ports:
+      - "8085:8085"
+
+    volumes:
+      - ./apps/ms-paciente.jar:/app/app.jar
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/mspaciente
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  ms-medico:
+    image: eclipse-temurin:21-jre
+    container_name: ms-medico
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    ports:
+      - "8087:8087"
+
+    volumes:
+      - ./apps/ms-medico.jar:/app/app.jar
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/msmedico
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  ms-citas:
+    image: eclipse-temurin:21-jre
+    container_name: ms-citas
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    ports:
+      - "8089:8089"
+
+    volumes:
+      - ./apps/ms_citas.jar:/app/app.jar
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/mscitas
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  msAtencionMedica:
+    image: eclipse-temurin:21-jre
+    container_name: msAtencionMedica
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    ports:
+      - "8084:8084"
+
+    volumes:
+      - ./apps/msAtencionMedica.jar:/app/app.jar
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/msatencionmedica
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  ms-receta:
+    image: eclipse-temurin:21-jre
+    container_name: ms-receta
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    ports:
+      - "8088:8088"
+
+    volumes:
+      - ./apps/ms-receta.jar:/app/app.jar
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/msreceta
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  ms-farmacia:
+    image: eclipse-temurin:21-jre
+    container_name: ms-farmacia
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    ports:
+      - "8086:8086"
+
+    volumes:
+      - ./apps/ms-farmacia.jar:/app/app.jar
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/msfarmacia
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  ms-examen:
+    image: eclipse-temurin:21-jre
+    container_name: ms-examen
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    ports:
+      - "8081:8081"
+
+    volumes:
+      - ./apps/ms-examen.jar:/app/app.jar
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/consultorio_examenes_db
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  msfacturacion:
+    image: eclipse-temurin:21-jre
+    container_name: msfacturacion
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    ports:
+      - "8082:8082"
+
+    volumes:
+      - ./apps/msfacturacion.jar:/app/app.jar
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/facturas
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  ms-notificaciones:
+    image: eclipse-temurin:21-jre
+    container_name: ms-notificaciones
+
+    depends_on:
+      eureka-server:
+        condition: service_started
+
+    ports:
+      - "8090:8090"
+
+    volumes:
+      - ./apps/ms-notificaciones.jar:/app/app.jar
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/msnotificaciones
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+  api-gateway:
+    image: eclipse-temurin:21-jre
+    container_name: api-gateway
+
+    depends_on:
+      - msAutentificacion
+      - ms-paciente
+      - ms-medico
+      - ms-citas
+      - msAtencionMedica
+      - ms-receta
+      - ms-farmacia
+      - ms-examen
+      - msfacturacion
+      - ms-notificaciones
+
+    ports:
+      - "8080:8080"
+
+    volumes:
+      - ./apps/api-gateway.jar:/app/app.jar
+
+    environment:
+      EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka-server:8761/eureka/
+
+    command: ["java", "-jar", "/app/app.jar"]
+
+    networks:
+      - consultorio-net
+
+volumes:
+  mysql_data:
+
+networks:
+  consultorio-net:
+    driver: bridge
