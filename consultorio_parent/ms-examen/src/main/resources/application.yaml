@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:mysql://localhost:3306/consultorio_examenes_db?createDatabaseIfNotExist=true
     username: root
-    password:  ""
+    password:
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -24,6 +24,8 @@ spring:
     serialization:
       write-dates-as-timestamps: false # Para que las fechas se vean como texto ISO
 
+
+
 # CONFIGURACIÓN DE EUREKA CLIENT
 eureka:
   client:
@@ -34,4 +36,11 @@ eureka:
   instance:
     prefer-ip-address: true # Recomendado para microservicios en Docker o local
     instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
-   
+
+# CONFIGURACIÓN DE SWAGGER / SPRINGDOC
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /doc/swagger-ui.html

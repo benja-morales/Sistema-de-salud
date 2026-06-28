@@ -4,11 +4,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.cloud.openfeign.EnableFeignClients;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -79,12 +74,5 @@ public class Usuario {
         }
     }
 
-    @SpringBootApplication
-    @EnableDiscoveryClient
-    @EnableFeignClients // Habilita el escaneo de las interfaces en la carpeta client
-    public class AutenticacionApplication {
-        public static void main(String[] args) {
-         SpringApplication.run(AutenticacionApplication.class, args);
-        }
-    }
+    
 }
