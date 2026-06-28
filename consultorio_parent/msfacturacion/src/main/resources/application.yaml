@@ -1,4 +1,10 @@
+server:
+  port: 8082
+
 spring:
+  application:
+    name: msfacturacion
+
   datasource:
     url: jdbc:mysql://localhost:3306/facturas
     username: root
@@ -8,6 +14,24 @@ spring:
     hibernate:
       ddl-auto: update
     show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQLDialect
+  
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
 
-server:
-  port: 8082
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+
+
+# CONFIGURACIÓN DE SWAGGER / SPRINGDOC
+springdoc:
+  api-docs:
+    enabled: true
+  swagger-ui:
+    enabled: true
+    path: /doc/swagger-ui.html

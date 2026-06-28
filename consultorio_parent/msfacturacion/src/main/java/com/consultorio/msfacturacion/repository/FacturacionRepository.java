@@ -1,13 +1,13 @@
 package com.consultorio.msfacturacion.repository;
 
 
-import com.consultorio.msfacturacion.modelo.Facturacion;
+import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import com.consultorio.msfacturacion.modelo.Facturacion;
 
 @Repository
 public interface FacturacionRepository extends JpaRepository<Facturacion, Long> {

@@ -8,6 +8,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -27,26 +28,32 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
+@Schema(description = "Entidad que representa la cabecera de una factura o cuenta médica en el sistema")
 public class Facturacion {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Schema(description = "Identificador único de la factura", example = "105")
     private Long idFactura;
 
-    // Relación lógica con el ID del paciente (como en tu modelo de Examen)
     @NotNull(message = "El ID del paciente es obligatorio")
     @Column(nullable = false)
+    @Schema(description = "Identificador único del paciente asociado a la factura", example = "45")
     private Long idPaciente;
 
     @Column(nullable = false, updatable = false)
+    @Schema(description = "Fecha y hora automática de emisión de la factura", example = "2026-06-10T15:45:00")
     private LocalDateTime fechaEmision;
 
     @Column(nullable = false)
+    @Schema(description = "Monto total calculado automáticamente a partir de los detalles", example = "150.50")
     private Double total;
 
+    @Schema(description = "Estado de pago actual de la factura (ej: PENDIENTE, PAGADA, ANULADA)", example = "PENDIENTE")
     private String estado; // Ejemplo: PAGADA, PENDIENTE, ANULADA
 
     @OneToMany(mappedBy = "factura", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Schema(description = "Lista detallada de los ítems o servicios médicos cobrados en la factura")
     private List<FacturaDetalle> detalles = new ArrayList<>();
 
     //probar
@@ -82,12 +89,6 @@ public class Facturacion {
         }
     }
 
-    @SpringBootApplication
-    @EnableFeignClients // <--- Indispensable para que funcione la carpeta client
-    public class MsFacturacionApplication {
-        public static void main(String[] args) {
-            SpringApplication.run(MsFacturacionApplication.class, args);
-        }
-    }
+    
 }
 
