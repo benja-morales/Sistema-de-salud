@@ -7,8 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import consultorio.msAtencionMedica.client.CitasClient;
+import consultorio.msAtencionMedica.data.Cita;
 import consultorio.msAtencionMedica.model.AtencionMedica;
-import consultorio.msAtencionMedica.model.Cita;
 import consultorio.msAtencionMedica.repository.AtencionMedicaRepository;
 
 @Service
