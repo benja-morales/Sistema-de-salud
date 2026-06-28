@@ -3,6 +3,8 @@ package com.consultorio.msnotificaciones.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.hateoas.CollectionModel;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.consultorio.msnotificaciones.assemblers.NotificacionModelAssembler;
 import com.consultorio.msnotificaciones.model.Notificacion;
 import com.consultorio.msnotificaciones.service.NotificacionService;
 
@@ -26,37 +29,37 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/api/notificaciones")
+@RequestMapping("/api/v2/notificaciones")
 @Tag(
-    name = "Notificaciones",
-    description = "Operaciones relacionadas con las notificaciones del sistema"
+    name = "Notificaciones HATEOAS",
+    description = "Operaciones relacionadas con las notificaciones utilizando HATEOAS"
 )
-public class NotificacionController {
+public class NotificacionControllerV2 {
 
     @Autowired
     private NotificacionService service;
 
+    @Autowired
+    private NotificacionModelAssembler assembler;
+
     @GetMapping
     @Operation(
         summary = "Obtener todas las notificaciones",
-        description = "Obtiene una lista completa de notificaciones registradas"
+        description = "Obtiene una lista completa de notificaciones con enlaces HATEOAS"
     )
     @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Listado obtenido correctamente",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = Notificacion.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "No existen notificaciones registradas"
-        )
+        @ApiResponse(responseCode = "200", description = "Listado obtenido correctamente"),
+        @ApiResponse(responseCode = "404", description = "No existen notificaciones registradas")
     })
-    public ResponseEntity<List<Notificacion>> listar() {
-        return ResponseEntity.ok(service.listar());
+    public CollectionModel<EntityModel<Notificacion>> listar() {
+
+        List<EntityModel<Notificacion>> notificaciones =
+                service.listar()
+                        .stream()
+                        .map(assembler::toModel)
+                        .toList();
+
+        return CollectionModel.of(notificaciones);
     }
 
     @GetMapping("/{id}")
@@ -78,11 +81,12 @@ public class NotificacionController {
             description = "Notificación no encontrada"
         )
     })
-    public ResponseEntity<Notificacion> buscarPorId(
+    public EntityModel<Notificacion> buscarPorId(
             @Parameter(description = "ID de la notificación", required = true)
             @PathVariable Long id) {
 
-        return ResponseEntity.ok(service.buscarPorId(id));
+        return assembler.toModel(
+                service.buscarPorId(id));
     }
 
     @PostMapping
@@ -90,24 +94,12 @@ public class NotificacionController {
         summary = "Crear notificación",
         description = "Registra una nueva notificación en el sistema"
     )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "201",
-            description = "Notificación creada correctamente",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = Notificacion.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Datos inválidos"
-        )
-    })
-    public ResponseEntity<Notificacion> guardar(
+    public ResponseEntity<EntityModel<Notificacion>> guardar(
             @Valid @RequestBody Notificacion notificacion) {
 
-        return ResponseEntity.ok(service.guardar(notificacion));
+        return ResponseEntity.ok(
+                assembler.toModel(
+                        service.guardar(notificacion)));
     }
 
     @PutMapping("/{id}/leer")
@@ -115,21 +107,12 @@ public class NotificacionController {
         summary = "Marcar notificación como leída",
         description = "Actualiza el estado de una notificación a leída"
     )
-    @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "200",
-            description = "Notificación actualizada correctamente"
-        ),
-        @ApiResponse(
-            responseCode = "404",
-            description = "Notificación no encontrada"
-        )
-    })
-    public ResponseEntity<Notificacion> marcarComoLeida(
-            @Parameter(description = "ID de la notificación", required = true)
+    public ResponseEntity<EntityModel<Notificacion>> marcarComoLeida(
             @PathVariable Long id) {
 
-        return ResponseEntity.ok(service.marcarComoLeida(id));
+        return ResponseEntity.ok(
+                assembler.toModel(
+                        service.marcarComoLeida(id)));
     }
 
     @GetMapping("/modulo/{modulo}")
@@ -137,15 +120,16 @@ public class NotificacionController {
         summary = "Buscar notificaciones por módulo",
         description = "Obtiene todas las notificaciones pertenecientes a un módulo específico"
     )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Notificaciones encontradas"),
-        @ApiResponse(responseCode = "404", description = "No existen notificaciones para el módulo indicado")
-    })
-    public ResponseEntity<List<Notificacion>> buscarPorModulo(
-            @Parameter(description = "Nombre del módulo", required = true)
+    public CollectionModel<EntityModel<Notificacion>> buscarPorModulo(
             @PathVariable String modulo) {
 
-        return ResponseEntity.ok(service.buscarPorModulo(modulo));
+        List<EntityModel<Notificacion>> notificaciones =
+                service.buscarPorModulo(modulo)
+                        .stream()
+                        .map(assembler::toModel)
+                        .toList();
+
+        return CollectionModel.of(notificaciones);
     }
 
     @GetMapping("/noleidas")
@@ -153,12 +137,15 @@ public class NotificacionController {
         summary = "Obtener notificaciones no leídas",
         description = "Retorna todas las notificaciones pendientes de lectura"
     )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Listado obtenido correctamente")
-    })
-    public ResponseEntity<List<Notificacion>> buscarNoLeidas() {
+    public CollectionModel<EntityModel<Notificacion>> buscarNoLeidas() {
 
-        return ResponseEntity.ok(service.buscarNoLeidas());
+        List<EntityModel<Notificacion>> notificaciones =
+                service.buscarNoLeidas()
+                        .stream()
+                        .map(assembler::toModel)
+                        .toList();
+
+        return CollectionModel.of(notificaciones);
     }
 
     @DeleteMapping("/{id}")
@@ -166,15 +153,11 @@ public class NotificacionController {
         summary = "Eliminar notificación",
         description = "Elimina una notificación existente"
     )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "204", description = "Notificación eliminada correctamente"),
-        @ApiResponse(responseCode = "404", description = "Notificación no encontrada")
-    })
     public ResponseEntity<Void> eliminar(
-            @Parameter(description = "ID de la notificación", required = true)
             @PathVariable Long id) {
 
         service.eliminar(id);
+
         return ResponseEntity.noContent().build();
     }
 
@@ -183,12 +166,10 @@ public class NotificacionController {
         summary = "Obtener notificaciones de citas",
         description = "Obtiene mensajes relacionados con citas médicas"
     )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Listado obtenido correctamente")
-    })
     public ResponseEntity<List<String>> obtenerNotificacionesCitas() {
 
-        return ResponseEntity.ok(service.obtenerNotificacionesCitas());
+        return ResponseEntity.ok(
+                service.obtenerNotificacionesCitas());
     }
 
     @GetMapping("/recetas")
@@ -196,12 +177,10 @@ public class NotificacionController {
         summary = "Obtener notificaciones de recetas",
         description = "Obtiene mensajes relacionados con recetas médicas"
     )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Listado obtenido correctamente")
-    })
     public ResponseEntity<List<String>> obtenerNotificacionesRecetas() {
 
-        return ResponseEntity.ok(service.obtenerNotificacionesRecetas());
+        return ResponseEntity.ok(
+                service.obtenerNotificacionesRecetas());
     }
 
     @GetMapping("/examenes")
@@ -209,11 +188,9 @@ public class NotificacionController {
         summary = "Obtener notificaciones de exámenes",
         description = "Obtiene mensajes relacionados con exámenes médicos"
     )
-    @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Listado obtenido correctamente")
-    })
     public ResponseEntity<List<String>> obtenerNotificacionesExamenes() {
 
-        return ResponseEntity.ok(service.obtenerNotificacionesExamenes());
+        return ResponseEntity.ok(
+                service.obtenerNotificacionesExamenes());
     }
 }
