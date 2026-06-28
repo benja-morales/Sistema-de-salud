@@ -1,4 +1,4 @@
-package consultorio.msAtencionMedica.model;
+package consultorio.msAtencionMedica.data;
 
 import lombok.Data;
 

@@ -4,7 +4,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import consultorio.msAtencionMedica.model.Cita;
+import consultorio.msAtencionMedica.data.Cita;
 
 @FeignClient(name = "mscitas")
 public interface CitasClient {

@@ -16,10 +16,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.consultorio.msfarmacia.model.Medicamento;
 import com.consultorio.msfarmacia.service.MedicamentoService;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/medicamentos")
+@Tag(name = "Farmacia", description = "Operaciones relacionadas con los medicamentos")
 public class MedicamentoController {
 
     private final MedicamentoService service;
@@ -29,16 +37,39 @@ public class MedicamentoController {
     }
 
     @GetMapping
+    @Operation(summary="Obtener todos los medicamentos", description="Obtiene una lista de todos los medicamentos")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode= "200", description = "Lista entregada de manera exitosa", 
+            content= @Content(mediaType= "application/json",
+            schema= @Schema(implementation= Medicamento.class))),
+        @ApiResponse(responseCode= "404", description= "No existen Medicamentos entregable")
+    })
     public ResponseEntity<List<Medicamento>> listar() {
         return ResponseEntity.ok(service.listar());
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Medicamento> buscar(@PathVariable Long id) {
-        return ResponseEntity.ok(service.buscarId(id));
+    @Operation(summary="Obtener el medicamento con el ID", description="Obtiene un medicamento en base a un ID")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode= "200", description = "Medicamento encontrado", 
+            content= @Content(mediaType= "application/json",
+            schema= @Schema(implementation= Medicamento.class))),
+        @ApiResponse(responseCode= "404", description= "No existe medicamento con ese ID")
+    })
+    public ResponseEntity<Medicamento> buscar(
+        @Parameter(description="Id del medicamento", required= true) 
+        @PathVariable Long id) {
+            return ResponseEntity.ok(service.buscarId(id));
     }
 
     @PostMapping
+    @Operation(summary="Almacenar un medicamento nuevo", description="Agrega medicamento a la base de datos")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode= "200", description = "Medicamento agregado exitosamente", 
+            content= @Content(mediaType= "application/json",
+            schema= @Schema(implementation= Medicamento.class))),
+        @ApiResponse(responseCode= "404", description= "No fue posible agregar medicamento")
+    })
     public ResponseEntity<Medicamento> guardar(
             @Valid @RequestBody Medicamento medicamento) {
 
@@ -47,7 +78,15 @@ public class MedicamentoController {
     }
 
     @PutMapping("/{id}")
+    @Operation(summary="Actualizar datos del medicamento con el ID", description="Actualiza medicamento ")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode= "200", description = "Medicamento encontrado y actualizado", 
+            content= @Content(mediaType= "application/json",
+            schema= @Schema(implementation= Medicamento.class))),
+        @ApiResponse(responseCode= "404", description= "No existe medicamento con ese ID")
+    })
     public ResponseEntity<Medicamento> actualizar(
+            @Parameter(description="Id del medicamento", required= true)
             @PathVariable Long id,
             @RequestBody Medicamento medicamento) {
 
@@ -55,9 +94,18 @@ public class MedicamentoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> eliminar(@PathVariable Long id) {
+    @Operation(summary="Eliminar datos del medicamento en base al ID", description="")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode= "200", description = "Medicamento encontrado y eliminado", 
+            content= @Content(mediaType= "application/json",
+            schema= @Schema(implementation= Medicamento.class))),
+        @ApiResponse(responseCode= "404", description= "No existe medicamento con ese ID")
+    })
+    public ResponseEntity<String> eliminar(
+        @Parameter(description="Id del medicamento", required= true)
+        @PathVariable Long id) {
 
-        service.eliminar(id);
+            service.eliminar(id);
 
         return ResponseEntity.ok("Medicamento eliminado");
     }
