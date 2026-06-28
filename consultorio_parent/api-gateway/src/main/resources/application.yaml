@@ -7,18 +7,83 @@ spring:
 
   cloud:
     gateway:
-      routes:
-        - id: ms-paciente
-          uri: lb://ms-paciente
-          predicates:
-            - Path=/api/v1/pacientes/**
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: false
 
-        - id: ms-personal-salud
-          uri: lb://ms-personal-salud
+      routes:
+
+        # AUTENTIFICACION
+        - id: ms-autentificacion
+          uri: lb://msAutentificacion
           predicates:
-            - Path=/api/v1/personal/**
+            - Path=/api/auth/**
+
+        # FACTURACION
+        - id: ms-facturacion
+          uri: lb://msfacturacion
+          predicates:
+            - Path=/api/facturas/**
+
+        # ATENCION MEDICA
+        - id: ms-atencion-medica
+          uri: lb://msatencionMedica
+          predicates:
+            - Path=/api/atenciones/**
+
+        # PACIENTES
+        - id: ms-paciente
+          uri: lb://mspaciente
+          predicates:
+            - Path=/api/pacientes/**
+
+        # MEDICOS
+        - id: ms-medico
+          uri: lb://msmedico
+          predicates:
+            - Path=/api/medicos/**
+
+        # FARMACIA
+        - id: ms-farmacia
+          uri: lb://msfarmacia
+          predicates:
+            - Path=/api/medicamentos/**
+
+        # RECETAS
+        - id: ms-receta
+          uri: lb://msreceta
+          predicates:
+            - Path=/api/recetas/**
+
+        # CITAS
+        - id: ms-citas
+          uri: lb://mscitas
+          predicates:
+            - Path=/api/citas/**
+
+        # EXAMENES
+        - id: ms-examenes
+          uri: lb://ms-examenes
+          predicates:
+            - Path=/api/examenes/**
+
+        # NOTIFICACIONES
+        - id: ms-notificaciones
+          uri: lb://ms-notificaciones
+          predicates:
+            - Path=/api/notificaciones/**
 
 eureka:
   client:
     service-url:
-      defaultZone: http://localhost:8761/eureka
+      defaultZone: http://localhost:8761/eureka/
+
+  instance:
+    prefer-ip-address: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
