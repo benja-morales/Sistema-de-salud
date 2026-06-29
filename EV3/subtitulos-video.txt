@@ -1,0 +1,40 @@
+1-Bienvenida y qué hace el sistema(BENJAMÍN)
+Hola a todos. En este video les vamos a mostrar cómo instalar y lanzar nuestro sistema de microservicios para un Consultorio Médico, y hacer una demostración de lo que puede hacer. 
+Básicamente, el programa ayuda a gestionar un consultorio médico con funciones como:  registrar pacientes, agendar citas, generar recetas y manejar la facturación. Como son 10 partes o módulos distintos trabajando juntos, los metimos en contenedores de Docker para que se instale todo con un solo click.
+2-Instalación y Arranque en vivo(GABRIEL)
+Para instalarlo, solo necesitamos tener Docker Desktop abierto. 
+Aquí en la carpeta raíz del proyecto tenemos este archivo automático llamado arrancar-docker.bat.  Al cual al darle doble clic la consola empieza a descargar y activar todo el ecosistema en segundo plano... y como pueden ver, todos los servicios y la base de datos MySQL ya están activos.
+Esto lo podemos verificar dentro de Docker Desktop mirando los apartados de Containers y Volumes.
+3-Torre de control - Eureka(MARCO)
+Ahora que el sistema está encendido, podemos abrir el navegador en el puerto 8761 para entrar a Eureka, que es como la torre de control de la aplicación, y acá lo tienen. En esta lista aparecen registrados, automáticamente todos nuestros módulos independientes, como MS-PACIENTE, MS-MEDICO o MS-CITA. Toda esta comunicación pasa por una puerta única en el puerto 8080 que es el API Gateway.
+4-Verificación de la base de datos(BENJAMÍN)
+Para ver cómo se conectan las bases de datos vamos a ver dónde se guarda la información una vez instalado el programa. 
+Si entramos a nuestro CMD e ingresamos el comando en pantalla docker exec -it consultorio-mysql mysql -uroot -proot podremos ingresar a la base de datos. y en conjunto con este otro comando (SELECT table_schema AS 'Base de Datos', COUNT(*) AS 'Cantidad de Tablas' FROM information_schema.tables WHERE table_schema NOT IN ('information_schema', 'performance_schema', 'mysql', 'sys') GROUP BY table_schema;) podremos ver la cantidad de tablas existentes para cada microservicio. Esto es ideal porque si un módulo falla, los datos de los demás siguen a salvo.
+5-Documentación de endpoints - Swagger UI(GABRIEL)
+Para ver qué funciones tiene el programa y probarlas, usamos Swagger, que nos da una interfaz web para interactuar con cada módulo. En el archivo README dejamos la lista de enlaces. Voy a abrir, por ejemplo, la pestaña de Pacientes (puerto 8085), la de Médicos (8087) y la de Citas (8089). Todas las interfaces están listas para recibir comandos
+6-Simulación de uso en vivo - POST y GET(MARCO)
+Vamos a probar qué hace el programa simulando un flujo real en el consultorio:
+1. Primero, en el Swagger de Pacientes, vamos a registrar a una persona. Rellenamos el formulario con datos de prueba, le damos a ejecutar... y listo, el sistema nos avisa con un código de éxito que el paciente se guardó.
+
+2. Hacemos lo mismo en el módulo de Médicos para dar de alta a un especialista... guardado también.
+
+3. Ahora que ambos existen el módulo de Citas los puede asociar por dentro y nos agenda la hora médica sin problemas. 
+Para comprobar que el programa realmente guardó todo en la base de datos, nos vamos a swagger, al método GET /api/pacientes... ejecutamos... y como ven en pantalla, el sistema nos trae de vuelta toda la lista con la información del paciente que acabamos de ingresar.
+7-El inspector automático de calidad: (BENJAMÍN)
+Para asegurar que ninguna de estas funciones que mostramos falle cuando actualicemos el programa, el sistema incluye una suite de pruebas automáticas con JUnit y Mockito.
+En el editor de código CMD les muestro un ejemplo de un test de servicio o de controlador. Lo que hace esta prueba es simular de forma aislada la creación de un paciente en memoria y validar que el sistema responda exactamente lo que dice la regla de negocio del consultorio.
+8-Ejecutar las pruebas en vivo(GABRIEL)
+Normalmente, para compilar el proyecto completo multi-módulo usamos el comando maestro de Maven mvn clean install pasándole la bandera -DskipTests para saltárselas y armar rápido el empaquetado.
+Pero como queremos hacer el control de calidad en vivo, nos paramos en la carpeta raíz o parent del proyecto y vamos a ejecutar estas dos pruebas específicas de forma directa desde la consola:
+Primero, disparamos el test de servicio en Pacientes escribiendo:
+mvn test -pl ms-paciente -Dtest=PacienteServiceTest
+Damos Enter... vemos cómo compila e inicia JUnit de forma aislada en ese módulo... y ahí está: la consola nos avisa que pasó con éxito.
+Ahora, desde esta misma carpeta raíz parent, lanzamos la prueba de controlador de Médicos usando:
+mvn test -pl ms-medico -Dtest=MedicoControllerTest
+Damos Enter nuevamente... ¡Y listo! Ahí nos arroja el reporte impecable en la pantalla. Significa que pasó el examen con cero errores.
+9-Conclusión del tutorial(MARCO)
+ Como conclusión de este tutorial, logramos instalar un sistema de salud moderno, modular y muy fácil de mantener. Gracias a Docker, el consultorio queda totalmente portable y listo para subirse a servidores en la nube como AWS cuando se necesite, asegurando que las fichas médicas de los pacientes y las recetas siempre estén disponibles para los doctores o especialistas. Eso sería todo por nuestro tutorial de instalación, ¡muchas gracias por ver nuestro video!
+
+SELECT table_schema as 'base de datos', count(*) as 'cantidad de tablas' from information_schema.tables WHERE table_schema NOT IN ('information_schema', 'performance_schema', 'mysql', 'sys') group by table_schema;
+
+
